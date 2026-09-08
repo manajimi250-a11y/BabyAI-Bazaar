@@ -1,14 +1,12 @@
 package com.newlifetech.babyhey.ui.screens
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -25,7 +23,12 @@ import kotlinx.coroutines.launch
 
 /**
  * اولین صفحه‌ای که با باز کردن اپ دیده می‌شه.
- * زدن «Let's Start» همیشه می‌ره به صفحه‌ی انتخاب بازیکن (حداکثر ۲ نفر).
+ * زدن دکمه‌ی «شروع» همیشه می‌ره به صفحه‌ی انتخاب بازیکن.
+ *
+ * نکته‌ی مهم: دکمه‌ی «شروع» یه دکمه‌ی واقعی Composeـه (نه یه ناحیه‌ی نامرئی
+ * که حدسی روی محل دکمه‌ی نقاشی‌شده تو عکس پس‌زمینه گذاشته شده باشه). این یعنی
+ * با عوض‌شدن عکس پس‌زمینه (هر زبون، هر نسخه)، دیگه نیازی به تنظیم دستی مختصات
+ * نیست و دکمه همیشه کار می‌کنه.
  */
 @Composable
 fun WelcomeScreen(onStartClick: () -> Unit) {
@@ -43,15 +46,12 @@ fun WelcomeScreen(onStartClick: () -> Unit) {
         val candidate = if (language == "en") "welcome_bg" else "welcome_bg_$language"
         var id = context.resources.getIdentifier(candidate, "drawable", context.packageName)
         if (id == 0) {
-            // اگه هنوز عکس این زبون ساخته نشده، برمی‌گرده به پس‌زمینه‌ی پیش‌فرض انگلیسی
             id = context.resources.getIdentifier("welcome_bg", "drawable", context.packageName)
         }
         id
     }
 
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val screenHeight = maxHeight
-
+    Box(modifier = Modifier.fillMaxSize()) {
         if (bgResId != 0) {
             Image(
                 painter = painterResource(id = bgResId),
@@ -106,15 +106,23 @@ fun WelcomeScreen(onStartClick: () -> Unit) {
             }
         }
 
-        // دکمه‌ی واقعی و شفاف، دقیقاً روی محل دکمه‌ی «Let's Start!» عکس
-        Box(
+        // دکمه‌ی واقعی «شروع» — مستقل از محتوای عکس پس‌زمینه، همیشه درست کار می‌کنه
+        val startButtonBottomPadding = if (language == "fa") 61.dp else 48.dp
+        Button(
+            onClick = onStartClick,
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = screenHeight * 0.79f)
+                .align(Alignment.BottomCenter)
+                .padding(bottom = startButtonBottomPadding)
                 .fillMaxWidth(0.82f)
-                .height(screenHeight * 0.055f)
-                .clip(RoundedCornerShape(50))
-                .clickable { onStartClick() }
-        )
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = BabyOrange),
+            shape = RoundedCornerShape(50)
+        ) {
+            Text(
+                UiStrings.t("welcome_start_button", language),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
