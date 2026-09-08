@@ -10,6 +10,11 @@ object UiStrings {
     private val strings: Map<String, Map<String, String>> = mapOf(
 
         // دکمه‌ی انتخاب زبان (صفحه‌ی خوش‌آمدگویی)
+                "welcome_start_button" to mapOf(
+            "en" to "Let's Start!", "fa" to "بزن بریم!", "sv" to "Sätt igång!", "tr" to "Haydi başlayalım!",
+            "de" to "Los geht's!", "fr" to "C'est parti !", "es" to "¡Empecemos!", "ru" to "Начнём!",
+            "zh" to "我们开始吧！", "hi" to "चलिए शुरू करें!", "ar" to "لنبدأ!"
+        ),
         "language_button" to mapOf(
             "en" to "Language", "fa" to "زبان", "sv" to "Språk", "tr" to "Dil",
             "de" to "Sprache", "fr" to "Langue", "es" to "Idioma", "ru" to "Язык",
