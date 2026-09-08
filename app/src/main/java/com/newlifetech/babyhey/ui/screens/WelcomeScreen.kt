@@ -1,12 +1,14 @@
 package com.newlifetech.babyhey.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -51,7 +53,8 @@ fun WelcomeScreen(onStartClick: () -> Unit) {
         id
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val maxHeight = this.maxHeight
         if (bgResId != 0) {
             Image(
                 painter = painterResource(id = bgResId),
@@ -106,23 +109,17 @@ fun WelcomeScreen(onStartClick: () -> Unit) {
             }
         }
 
-        // دکمه‌ی واقعی «شروع» — مستقل از محتوای عکس پس‌زمینه، همیشه درست کار می‌کنه
-        val startButtonBottomPadding = if (language == "fa") 61.dp else 48.dp
-        Button(
-            onClick = onStartClick,
+        // ناحیه‌ی نامرئی روی دکمه‌ی نقاشی‌شده‌ی «Let's Start!»/«بزن بریم!» تو خود عکس
+        // فارسی چون عکس جداگانه‌ست، کمی پایین‌تر تنظیم شده
+        val startButtonTopFraction = if (language == "fa") 0.815f else 0.79f
+        Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = startButtonBottomPadding)
+                .align(Alignment.TopCenter)
+                .padding(top = maxHeight * startButtonTopFraction)
                 .fillMaxWidth(0.82f)
-                .height(56.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = BabyOrange),
-            shape = RoundedCornerShape(50)
-        ) {
-            Text(
-                UiStrings.t("welcome_start_button", language),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+                .height(maxHeight * 0.055f)
+                .clip(RoundedCornerShape(50))
+                .clickable { onStartClick() }
+        )
     }
 }
