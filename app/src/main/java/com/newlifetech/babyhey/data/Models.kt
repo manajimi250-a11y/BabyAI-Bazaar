@@ -43,7 +43,7 @@ data class Word(
  * es=اسپانیایی, ru=روسی, zh=چینی, hi=هندی, ar=عربی
  */
 object SupportedLanguages {
-    val codes = listOf("en", "fa", "sv", "tr", "de", "fr", "es", "ru", "zh", "hi", "ar")
+    val codes = listOf("en", "fa")
 
     val displayNames = mapOf(
         "en" to "English",
@@ -242,7 +242,7 @@ object WordRepository {
                 "en" to "Grandpa", "fa" to "پدربزرگ", "sv" to "Morfar", "tr" to "Dede", "de" to "Opa",
                 "fr" to "Grand-père", "es" to "Abuelo", "ru" to "Дедушка", "zh" to "爷爷", "hi" to "दादा", "ar" to "جد"),
             w("sibling", "people", 2,
-                "en" to "Sibling", "fa" to "خواهر/برادر", "sv" to "Syskon", "tr" to "Kardeş", "de" to "Geschwister",
+                "en" to "Brother", "fa" to "برادر", "sv" to "Syskon", "tr" to "Kardeş", "de" to "Geschwister",
                 "fr" to "Frère/Sœur", "es" to "Hermano/a", "ru" to "Брат/Сестра", "zh" to "兄弟姐妹", "hi" to "भाई-बहन", "ar" to "أخ/أخت"),
             w("police", "people", 1,
                 "en" to "Police Officer", "fa" to "پلیس", "sv" to "Polis", "tr" to "Polis", "de" to "Polizist",
