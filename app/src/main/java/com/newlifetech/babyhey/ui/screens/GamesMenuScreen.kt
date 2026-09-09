@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,9 +18,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.newlifetech.babyhey.billing.PurchaseManager
 import com.newlifetech.babyhey.data.UiStrings
 import com.newlifetech.babyhey.data.UserPreferences
 import com.newlifetech.babyhey.ui.components.SettingsIconButton
+import com.newlifetech.babyhey.ui.components.UnlockDialog
 import com.newlifetech.babyhey.ui.theme.BabyBlue
 import com.newlifetech.babyhey.ui.theme.BabyGreen
 import com.newlifetech.babyhey.ui.theme.BabyOrange
@@ -39,14 +42,21 @@ fun GamesMenuScreen(
     onSpeedTapClick: () -> Unit,
     onPuzzleClick: () -> Unit,
     onBalloonPopClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    purchaseManager: PurchaseManager
 ) {
     val context = LocalContext.current
     val prefs = remember { UserPreferences(context) }
     var language by remember { mutableStateOf("en") }
+    var showUnlockDialog by remember { mutableStateOf(false) }
+    val isUnlocked by purchaseManager.isUnlocked
 
     LaunchedEffect(Unit) {
         language = prefs.language.first()
+    }
+
+    fun handleClick(free: Boolean, action: () -> Unit) {
+        if (free || isUnlocked) action() else showUnlockDialog = true
     }
 
     Column(
@@ -76,73 +86,94 @@ fun GamesMenuScreen(
 
         Spacer(Modifier.height(20.dp))
 
+        // بازی «حافظه» همیشه رایگانه
         GameCard(
             emoji = "🧠",
             title = UiStrings.t("game_memory", language),
             color = BabyGreen,
-            onClick = onMemoryGameClick
+            locked = false,
+            onClick = { handleClick(free = true, action = onMemoryGameClick) }
         )
         Spacer(Modifier.height(14.dp))
         GameCard(
             emoji = "🔍",
             title = UiStrings.t("game_odd_one_out", language),
             color = BabyOrange,
-            onClick = onOddOneOutClick
+            locked = !isUnlocked,
+            onClick = { handleClick(free = false, action = onOddOneOutClick) }
         )
         Spacer(Modifier.height(14.dp))
         GameCard(
             emoji = "🗂️",
             title = UiStrings.t("game_sorting", language),
             color = BabyBlue,
-            onClick = onSortingGameClick
+            locked = !isUnlocked,
+            onClick = { handleClick(free = false, action = onSortingGameClick) }
         )
         Spacer(Modifier.height(14.dp))
         GameCard(
             emoji = "🔢",
             title = UiStrings.t("game_counting", language),
             color = BabyPurple,
-            onClick = onCountingGameClick
+            locked = !isUnlocked,
+            onClick = { handleClick(free = false, action = onCountingGameClick) }
         )
         Spacer(Modifier.height(14.dp))
         GameCard(
             emoji = "🎧",
             title = UiStrings.t("game_listen_tap", language),
             color = BabyPink,
-            onClick = onListenAndTapClick
+            locked = !isUnlocked,
+            onClick = { handleClick(free = false, action = onListenAndTapClick) }
         )
         Spacer(Modifier.height(14.dp))
         GameCard(
             emoji = "⚡",
             title = UiStrings.t("game_speed_tap", language),
             color = BabyYellow,
-            onClick = onSpeedTapClick
+            locked = !isUnlocked,
+            onClick = { handleClick(free = false, action = onSpeedTapClick) }
         )
         Spacer(Modifier.height(14.dp))
         GameCard(
             emoji = "🧩",
             title = UiStrings.t("game_puzzle", language),
             color = BabyGreen,
-            onClick = onPuzzleClick
+            locked = !isUnlocked,
+            onClick = { handleClick(free = false, action = onPuzzleClick) }
         )
         Spacer(Modifier.height(14.dp))
+        // بازی «بادکنک‌ها» همیشه رایگانه
         GameCard(
             emoji = "🎈",
             title = UiStrings.t("game_balloons", language),
             color = BabyOrange,
-            onClick = onBalloonPopClick
+            locked = false,
+            onClick = { handleClick(free = true, action = onBalloonPopClick) }
+        )
+    }
+
+    if (showUnlockDialog) {
+        UnlockDialog(
+            language = language,
+            onConfirm = {
+                showUnlockDialog = false
+                purchaseManager.purchaseFullUnlock { _, _ -> }
+            },
+            onDismiss = { showUnlockDialog = false }
         )
     }
 }
 
 @Composable
-private fun GameCard(emoji: String, title: String, color: Color, onClick: () -> Unit) {
+private fun GameCard(emoji: String, title: String, color: Color, locked: Boolean, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = color),
+        colors = CardDefaults.cardColors(containerColor = if (locked) Color.Gray else color),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
     ) {
         Row(
@@ -151,7 +182,10 @@ private fun GameCard(emoji: String, title: String, color: Color, onClick: () -> 
         ) {
             Text(emoji, fontSize = 38.sp)
             Spacer(Modifier.width(16.dp))
-            Text(title, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(title, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            if (locked) {
+                Icon(Icons.Filled.Lock, contentDescription = "Locked", tint = Color.White)
+            }
         }
     }
 }

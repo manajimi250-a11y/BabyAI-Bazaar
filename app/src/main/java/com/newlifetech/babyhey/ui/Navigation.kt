@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.newlifetech.babyhey.billing.PurchaseManager
 import com.newlifetech.babyhey.ui.screens.ActivityHubScreen
 import com.newlifetech.babyhey.ui.screens.AgeSelectScreen
 import com.newlifetech.babyhey.ui.screens.BalloonPopScreen
@@ -62,7 +63,10 @@ object Routes {
 }
 
 @Composable
-fun BabyAiNavHost(navController: NavHostController = rememberNavController()) {
+fun BabyAiNavHost(
+    navController: NavHostController = rememberNavController(),
+    purchaseManager: PurchaseManager
+) {
     val context = LocalContext.current
     val prefs = remember { UserPreferences(context) }
     val scope = rememberCoroutineScope()
@@ -154,7 +158,8 @@ fun BabyAiNavHost(navController: NavHostController = rememberNavController()) {
                 },
                 onSettingsClick = {
                     navController.navigate(Routes.SETTINGS)
-                }
+                },
+                purchaseManager = purchaseManager
             )
         }
 
@@ -195,7 +200,8 @@ fun BabyAiNavHost(navController: NavHostController = rememberNavController()) {
                 },
                 onSettingsClick = {
                     navController.navigate(Routes.SETTINGS)
-                }
+                },
+                purchaseManager = purchaseManager
             )
         }
 
@@ -246,7 +252,8 @@ fun BabyAiNavHost(navController: NavHostController = rememberNavController()) {
                 },
                 onSettingsClick = {
                     navController.navigate(Routes.SETTINGS)
-                }
+                },
+                purchaseManager = purchaseManager
             )
         }
 

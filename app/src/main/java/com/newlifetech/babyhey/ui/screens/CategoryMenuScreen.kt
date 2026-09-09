@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,11 +19,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.newlifetech.babyhey.billing.PurchaseManager
 import com.newlifetech.babyhey.data.Category
 import com.newlifetech.babyhey.data.UserPreferences
 import com.newlifetech.babyhey.data.WordRepository
 import com.newlifetech.babyhey.ui.components.MascotCompanion
 import com.newlifetech.babyhey.ui.components.ParentalGateDialog
+import com.newlifetech.babyhey.ui.components.UnlockDialog
 import com.newlifetech.babyhey.ui.theme.*
 import kotlinx.coroutines.flow.first
 
@@ -34,10 +37,14 @@ private fun colorForCategory(categoryId: String): Color = when (categoryId) {
     else -> BabyGreen
 }
 
+/** فقط دسته‌ی «حیوانات» همیشه رایگانه؛ بقیه نیاز به خرید «باز کردن کامل محتوا» دارن. */
+private val FREE_CATEGORY_ID = "animals"
+
 @Composable
 fun CategoryMenuScreen(
     onCategoryChosen: (String) -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    purchaseManager: PurchaseManager
 ) {
     val context = LocalContext.current
     val prefs = remember { UserPreferences(context) }
@@ -45,6 +52,9 @@ fun CategoryMenuScreen(
     var language by remember { mutableStateOf("en") }
     var childName by remember { mutableStateOf("") }
     var totalStars by remember { mutableStateOf(0) }
+    var showUnlockDialog by remember { mutableStateOf(false) }
+
+    val isUnlocked by purchaseManager.isUnlocked
 
     LaunchedEffect(Unit) {
         language = prefs.language.first()
@@ -106,7 +116,15 @@ fun CategoryMenuScreen(
             modifier = Modifier.weight(1f)
         ) {
             items(WordRepository.allCategories) { category ->
-                CategoryCard(category, language) { onCategoryChosen(category.id) }
+                val locked = !isUnlocked && category.id != FREE_CATEGORY_ID
+                CategoryCard(
+                    category = category,
+                    language = language,
+                    locked = locked,
+                    onClick = {
+                        if (locked) showUnlockDialog = true else onCategoryChosen(category.id)
+                    }
+                )
             }
         }
     }
@@ -117,6 +135,17 @@ fun CategoryMenuScreen(
             .windowInsetsPadding(WindowInsets.navigationBars)
             .padding(20.dp)
     )
+    }
+
+    if (showUnlockDialog) {
+        UnlockDialog(
+            language = language,
+            onConfirm = {
+                showUnlockDialog = false
+                purchaseManager.purchaseFullUnlock { _, _ -> }
+            },
+            onDismiss = { showUnlockDialog = false }
+        )
     }
 
     if (showGate) {
@@ -143,13 +172,15 @@ fun CategoryMenuScreen(
 }
 
 @Composable
-private fun CategoryCard(category: Category, language: String, onClick: () -> Unit) {
+private fun CategoryCard(category: Category, language: String, locked: Boolean, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .aspectRatio(1f)
             .clickable { onClick() },
         shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = colorForCategory(category.id)),
+        colors = CardDefaults.cardColors(
+            containerColor = if (locked) Color.Gray else colorForCategory(category.id)
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -159,6 +190,16 @@ private fun CategoryCard(category: Category, language: String, onClick: () -> Un
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold
             )
+            if (locked) {
+                Icon(
+                    Icons.Filled.Lock,
+                    contentDescription = "Locked",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(10.dp)
+                )
+            }
         }
     }
 }

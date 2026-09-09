@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,11 +18,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.newlifetech.babyhey.billing.PurchaseManager
 import com.newlifetech.babyhey.data.Story
 import com.newlifetech.babyhey.data.StoryRepository
 import com.newlifetech.babyhey.data.UiStrings
 import com.newlifetech.babyhey.data.UserPreferences
 import com.newlifetech.babyhey.ui.components.SettingsIconButton
+import com.newlifetech.babyhey.ui.components.UnlockDialog
 import com.newlifetech.babyhey.ui.theme.BabyBlue
 import com.newlifetech.babyhey.ui.theme.BabyGreen
 import com.newlifetech.babyhey.ui.theme.BabyPink
@@ -29,15 +32,21 @@ import kotlinx.coroutines.flow.first
 
 private val storyColors = listOf(BabyGreen, BabyBlue, BabyPink)
 
+/** اولین داستان تو لیست همیشه رایگانه؛ بقیه نیاز به خرید «باز کردن کامل محتوا» دارن. */
+private val FREE_STORY_ID: String? get() = StoryRepository.all.firstOrNull()?.id
+
 @Composable
 fun StoriesMenuScreen(
     onBack: () -> Unit,
     onStoryClick: (String) -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    purchaseManager: PurchaseManager
 ) {
     val context = LocalContext.current
     val prefs = remember { UserPreferences(context) }
     var language by remember { mutableStateOf("en") }
+    var showUnlockDialog by remember { mutableStateOf(false) }
+    val isUnlocked by purchaseManager.isUnlocked
 
     LaunchedEffect(Unit) {
         language = prefs.language.first()
@@ -71,27 +80,42 @@ fun StoriesMenuScreen(
         Spacer(Modifier.height(20.dp))
 
         StoryRepository.all.forEachIndexed { index, story ->
+            val locked = !isUnlocked && story.id != FREE_STORY_ID
             StoryCard(
                 story = story,
                 language = language,
                 color = storyColors[index % storyColors.size],
-                onClick = { onStoryClick(story.id) }
+                locked = locked,
+                onClick = {
+                    if (locked) showUnlockDialog = true else onStoryClick(story.id)
+                }
             )
             Spacer(Modifier.height(14.dp))
         }
         Spacer(Modifier.height(24.dp).windowInsetsPadding(WindowInsets.navigationBars))
     }
+
+    if (showUnlockDialog) {
+        UnlockDialog(
+            language = language,
+            onConfirm = {
+                showUnlockDialog = false
+                purchaseManager.purchaseFullUnlock { _, _ -> }
+            },
+            onDismiss = { showUnlockDialog = false }
+        )
+    }
 }
 
 @Composable
-private fun StoryCard(story: Story, language: String, color: Color, onClick: () -> Unit) {
+private fun StoryCard(story: Story, language: String, color: Color, locked: Boolean, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = color),
+        colors = CardDefaults.cardColors(containerColor = if (locked) Color.Gray else color),
         elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
     ) {
         Row(
@@ -104,8 +128,12 @@ private fun StoryCard(story: Story, language: String, color: Color, onClick: () 
                 text = story.title(language),
                 color = Color.White,
                 fontSize = 19.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
             )
+            if (locked) {
+                Icon(Icons.Filled.Lock, contentDescription = "Locked", tint = Color.White)
+            }
         }
     }
 }

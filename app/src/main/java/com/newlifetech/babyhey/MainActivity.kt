@@ -18,6 +18,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.newlifetech.babyhey.billing.PurchaseManager
 import com.newlifetech.babyhey.data.SupportedLanguages
 import com.newlifetech.babyhey.data.UserPreferences
 import com.newlifetech.babyhey.ui.BabyAiNavHost
@@ -38,13 +39,20 @@ class MainActivity : ComponentActivity() {
             val language by prefs.language.collectAsState(initial = "en")
             val isRtl = language in SupportedLanguages.rtlLanguages
 
+            // سیستم خرید درون‌برنامه‌ای (فقط یک‌بار برای کل اپ ساخته می‌شه)
+            val purchaseManager = remember { PurchaseManager(this@MainActivity) }
+            DisposableEffect(Unit) {
+                purchaseManager.connect()
+                onDispose { purchaseManager.disconnect() }
+            }
+
             BabyAITheme(nightMode = nightMode) {
                 CompositionLocalProvider(
                     LocalLayoutDirection provides if (isRtl) LayoutDirection.Rtl else LayoutDirection.Ltr
                 ) {
                     Surface(modifier = Modifier.fillMaxSize()) {
                         UsageTracker()
-                        BabyAiNavHost()
+                        BabyAiNavHost(purchaseManager = purchaseManager)
                     }
                 }
             }
