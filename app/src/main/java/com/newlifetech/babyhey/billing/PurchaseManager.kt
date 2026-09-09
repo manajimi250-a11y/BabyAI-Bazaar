@@ -16,7 +16,6 @@ class PurchaseManager(private val activity: ComponentActivity) {
 
     companion object {
         const val PRODUCT_ID_FULL_UNLOCK = "full_unlock"
-        private const val PURCHASE_REQUEST_CODE = 5000
 
         // کلید عمومی RSA اپ از پنل کافه‌بازار (بخش «کلید ورود به برنامه» / RSA)
         private const val RSA_PUBLIC_KEY =
@@ -71,7 +70,6 @@ class PurchaseManager(private val activity: ComponentActivity) {
     fun purchaseFullUnlock(onResult: (success: Boolean, message: String?) -> Unit) {
         val purchaseRequest = PurchaseRequest(
             productId = PRODUCT_ID_FULL_UNLOCK,
-            requestCode = PURCHASE_REQUEST_CODE,
             payload = "",
             dynamicPriceToken = null
         )
