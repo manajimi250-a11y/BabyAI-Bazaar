@@ -55,7 +55,7 @@ fun StoryScreen(storyId: String, onBack: () -> Unit) {
     val page = story.pages.getOrNull(pageIndex) ?: return
 
     // هر بار صفحه عوض شد، متن رو با صدا بخون (اول صدای آماده، بعد TTS)
-    LaunchedEffect(pageIndex) {
+    LaunchedEffect(pageIndex, language) {
         answeredCorrectly = false
         if (language == "fa") {
             val played = ttsManager.playBundledAudio("story_${story.id}_page${pageIndex + 1}")
