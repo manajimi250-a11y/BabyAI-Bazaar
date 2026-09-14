@@ -30,7 +30,7 @@ class PurchaseManager(private val activity: ComponentActivity) {
     private var paymentConnection: Connection? = null
 
     /** true اگه کاربر قبلاً محصول رو خریده باشه. UI باید این‌رو observe کنه. */
-    val isUnlocked = mutableStateOf(false)
+    val isUnlocked = mutableStateOf(true) // ⚠️ موقت برای تست - قبل از انتشار باید به false برگرده
 
     /** true وقتی اتصال به سرویس پرداخت بازار برقرار شده باشه. */
     val isConnected = mutableStateOf(false)
