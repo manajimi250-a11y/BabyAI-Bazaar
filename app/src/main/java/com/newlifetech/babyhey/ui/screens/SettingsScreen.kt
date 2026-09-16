@@ -41,6 +41,8 @@ import kotlinx.coroutines.launch
 // آبی آسمونی: پایین تیره‌تر، بالا روشن‌تر (تقریبا سفید)
 private val SkyBlueDark = Color(0xFF4FA3E3)
 private val SkyBlueLight = Color(0xFFF0F8FF)
+private val NightBgDark = Color(0xFF0D1B2A)
+private val NightBgLight = Color(0xFF1B263B)
 private val SelectedBlue = Color(0xFF2979FF)
 
 @Composable
@@ -76,7 +78,7 @@ fun SettingsScreen(onBack: () -> Unit, onParentDashboardClick: () -> Unit, onLul
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Brush.verticalGradient(listOf(SkyBlueLight, SkyBlueDark))
+                Brush.verticalGradient(if (nightModeEnabled) listOf(NightBgLight, NightBgDark) else listOf(SkyBlueLight, SkyBlueDark))
             )
             .verticalScroll(rememberScrollState())
             .padding(20.dp)
@@ -141,10 +143,11 @@ fun SettingsScreen(onBack: () -> Unit, onParentDashboardClick: () -> Unit, onLul
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("🎁 با بقیه‌ی اپ‌های ما آشنا شو!", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text("🎁 با بقیه‌ی اپ‌های ما آشنا شو!", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.DarkGray)
                         Icon(
                             if (promoExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                            contentDescription = null
+                            contentDescription = null,
+                            tint = Color.DarkGray
                         )
                     }
                     if (promoExpanded) {
@@ -373,7 +376,7 @@ private fun PromoAppRow(iconRes: Int, name: String, bazaarUrl: String, aparatUrl
             modifier = Modifier.size(48.dp).clip(RoundedCornerShape(10.dp))
         )
         Spacer(Modifier.width(12.dp))
-        Text(name, fontWeight = FontWeight.Bold, fontSize = 15.sp, modifier = Modifier.weight(1f))
+        Text(name, fontWeight = FontWeight.Bold, fontSize = 15.sp, modifier = Modifier.weight(1f), color = Color.DarkGray)
         IconButton(onClick = {
             context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(bazaarUrl)))
         }) {
