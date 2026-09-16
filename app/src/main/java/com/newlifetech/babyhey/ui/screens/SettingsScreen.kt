@@ -4,6 +4,14 @@ import android.content.Intent
 import android.net.Uri
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.draw.clip
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import com.newlifetech.babyhey.R
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.clickable
@@ -117,6 +125,48 @@ fun SettingsScreen(onBack: () -> Unit, onParentDashboardClick: () -> Unit, onLul
         }
 
         Spacer(Modifier.height(24.dp))
+
+        if (language == "fa") {
+            var promoExpanded by remember { mutableStateOf(false) }
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { promoExpanded = !promoExpanded },
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.92f))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("🎁 با بقیه‌ی اپ‌های ما آشنا شو!", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Icon(
+                            if (promoExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                            contentDescription = null
+                        )
+                    }
+                    if (promoExpanded) {
+                        Spacer(Modifier.height(14.dp))
+                        PromoAppRow(
+                            iconRes = R.drawable.promo_loghatkade,
+                            name = "لغت‌کده",
+                            bazaarUrl = "http://cafebazaar.ir/app/?id=com.hadsino.app&ref",
+                            aparatUrl = "https://www.aparat.com/v/tkx0mx2"
+                        )
+                        Spacer(Modifier.height(10.dp))
+                        PromoAppRow(
+                            iconRes = R.drawable.promo_bayganikade,
+                            name = "بایگانی‌کده",
+                            bazaarUrl = "http://cafebazaar.ir/app/?id=com.newlifetech.bayganikade&ref",
+                            aparatUrl = "https://www.aparat.com/v/tnf2l5j"
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(24.dp))
+        }
 
         Text(UiStrings.t("settings_photo_size", language), fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -309,5 +359,30 @@ fun SettingsScreen(onBack: () -> Unit, onParentDashboardClick: () -> Unit, onLul
                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
             }
         )
+    }
+}
+
+
+@Composable
+private fun PromoAppRow(iconRes: Int, name: String, bazaarUrl: String, aparatUrl: String) {
+    val context = LocalContext.current
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Image(
+            painter = painterResource(id = iconRes),
+            contentDescription = name,
+            modifier = Modifier.size(48.dp).clip(RoundedCornerShape(10.dp))
+        )
+        Spacer(Modifier.width(12.dp))
+        Text(name, fontWeight = FontWeight.Bold, fontSize = 15.sp, modifier = Modifier.weight(1f))
+        IconButton(onClick = {
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(bazaarUrl)))
+        }) {
+            Icon(Icons.Filled.Download, contentDescription = "دانلود از کافه‌بازار", tint = Color(0xFF2E7D32))
+        }
+        IconButton(onClick = {
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(aparatUrl)))
+        }) {
+            Icon(Icons.Filled.PlayCircle, contentDescription = "ویدیوی معرفی در آپارات", tint = Color(0xFFD32F2F))
+        }
     }
 }
